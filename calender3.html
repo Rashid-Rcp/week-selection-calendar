@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Petal Calender</title>
+	 <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style type="text/css">
+  	.p-n:hover{
+cursor: pointer;
+  	}
+  	.overlap{
+  		color: red;
+  	}
+  	.selected{
+  		background-color: green;
+  	}
+  	.row_selected .fa-check{
+  		font-size: 24px !important;
+  	}
+  	.fa-check{
+  		font-size: 14px;
+  		position: absolute;
+  	}
+  </style>
+</head>
+<body>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6" style="margin: 0px auto 0px auto; background-color: #ccc">
+			<div class="row">
+				<div class="col-md-3"><span class="p-n" id="prev">prev</span></div>
+				<div class="col-md-6" style="text-align: center;"><span id="month_year" style="font-size: 20px;">Month</span></div>
+				<div class="col-md-3" style="text-align: right;"><span class="p-n" id="next">next</span></div>
+			</div>
+			<table class="table table-bordered">
+				<tr>
+					<th>S</th><th>Mon</th><th>Tue</th><th>Wed</th><th>The</th><th>Fri</th><th>Sat</th><th>Sun</th>
+				</tr>
+				<tbody id="calender_body"></tbody>
+			</table>
+			<div id="datevalidation" style="color: red; text-align: center; font-size: 16px;"></div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+	var table = document.getElementById("calender_body");
+	function daysInMonth (month, year) {
+	return new Date(year, month, 0).getDate();
+	}
+
+    var D = new Date();
+    var date = D.getDate();
+    var year = D.getFullYear();
+    var month = D.getMonth()+1;
+    var day = D.getDay();
+    var ndays = daysInMonth(month,year);
+    var sday = new Date(year, month-1, 1).getDay();
+    var lday = new Date(year, month, 0).getDay();
+    if(lday == 0) lday=7;
+    var columns= parseInt((ndays + (sday-1) + (7-lday)) + (ndays + (sday-1) + (7-lday))/7);
+    var rows = parseInt((ndays + (sday-1) + (7-lday))/7);
+	var selected=[];
+	var selected_ids=[];
+
+	generating_tables(rows);
+	month_year(month, year);
+	dateloop(ndays, sday, month, year);
+	backward_overlapping(sday, month, year);
+	forward_overlapping(sday, ndays, columns, month, year);
+
+function generating_tables(rows){
+	while (table.rows.length > 0) { table.deleteRow(0) }
+	var id = 1;
+	var row_rel = 1;
+    for (i=0; i<rows ; i++){
+    	var row = table.insertRow(i);
+    	var scol = true;
+    	for(j=0; j<8; j++){
+    		if(scol){
+    			var cell = row.insertCell(j);
+    			var att_id = document.createAttribute("id");
+    			att_id.value = "r_"+id;
+    			var att_colr = document.createAttribute("colr");
+    			att_colr.value = row_rel;
+
+    			var att_scol = document.createAttribute("scol");
+    			att_scol.value = id;
+
+    			var att_class = document.createAttribute("class");
+    			att_class.value = 'sel-row';
+    			cell.setAttributeNode(att_id);
+    			cell.setAttributeNode(att_colr);
+    			cell.setAttributeNode(att_class);
+    			cell.setAttributeNode(att_scol);
+    			cell.innerHTML='<i class="fa fa-check"></i>'
+    			scol = false;
+    			continue;
+    		}
+    		var cell = row.insertCell(j);
+    		var att_id = document.createAttribute("id");
+    		att_id.value = id;
+    		var att_colr = document.createAttribute("colr");
+    		att_colr.value = row_rel;
+    		cell.setAttributeNode(att_colr);
+    		cell.setAttributeNode(att_id);
+    		id++;
+    	}
+    	var att_class = document.createAttribute("class");
+    	att_class.value = 'l-col';
+    	document.getElementById(id-1).setAttributeNode(att_class);
+    	row_rel++;
+    }
+}
+
+function month_year(month, year){
+	var months=["January","February","March","April","May","June","July","August", "September","October","November","December"]
+ 	$("#month_year").html(months[month-1]+ " " + year);
+}
+
+function dateloop (ndays, sday, month, year){
+	var nd=ndays; var sd= sday; var m =month; var y=year;
+	for(i=1; i<=nd; i++){
+		var id= i+(sd-1);
+		$("#"+id).html(i)
+		var date =i+"-"+m+"-"+y;
+		$("#"+id).attr('date', date);
+		$("#"+i).removeClass('overlap');
+	}
+}
+//backward overlapping
+function backward_overlapping(sday, month, year){
+	var sd=sday; var m=month; var y =year;
+	if(m-1==0) { m = 12; y=y-1; }
+	else { m= m-1; }
+	var prev_ndays = daysInMonth(m,y);
+	for (i=sd-1; i>0; i--){
+		$("#"+i).html(prev_ndays);
+		var date =prev_ndays+"-"+m+"-"+y;
+		$("#"+i).attr('date', date);
+		$("#"+i).addClass('overlap');
+		prev_ndays--;
+	}
+}
+//forward overlapping
+function forward_overlapping(sday, ndays, columns, month, year){
+	var sd=sday; var nd=ndays; var col=columns; var m=month; var y=year;
+	if(m+1 == 13) { m=1; y= y+1; }
+	else{ m = m+1; }
+	next_days=1;
+	for(i=nd+sd; i<=col; i++){
+		$("#"+i).html(next_days);
+		var date =next_days+"-"+m+"-"+y;
+		$("#"+i).attr('date', date);
+		$("#"+i).addClass('overlap');
+		next_days++;
+	}
+}
+
+$("#next").click(function(){
+	if(month+1==13){ month=1; year=year+1; }
+	else{ month=month+1; }
+    month_year(month, year);
+	var ndays = daysInMonth(month,year);
+	var sday = new Date(year, month-1, 1).getDay();
+	var lday = new Date(year, month, 0).getDay();
+	if(lday == 0) lday=7;
+	var columns= parseInt((ndays + (sday-1) + (7-lday)) + (ndays + (sday-1) + (7-lday))/7);
+    var rows = parseInt((ndays + (sday-1) + (7-lday))/7);
+ 
+	generating_tables(rows);
+	dateloop(ndays, sday, month, year);
+	backward_overlapping(sday, month, year);
+	forward_overlapping(sday, ndays, columns, month, year);
+	check_selected_ids()
+});
+
+$("#prev").click(function(){
+	if(month-1==0){ month=12; year=year-1; }
+	else{ month=month-1; }
+    month_year(month, year);
+	var ndays = daysInMonth(month,year);
+	var sday = new Date(year, month-1, 1).getDay();
+	var lday = new Date(year, month, 0).getDay();
+	if(lday == 0) lday=7;
+	var columns= parseInt((ndays + (sday-1) + (7-lday)) + (ndays + (sday-1) + (7-lday))/7);
+    var rows = parseInt((ndays + (sday-1) + (7-lday))/7);
+
+	generating_tables(rows);
+	dateloop(ndays, sday, month, year);
+	backward_overlapping(sday, month, year);
+	forward_overlapping(sday, ndays, columns, month, year);
+	check_selected_ids()
+});
+
+
+function week_validation(scol){
+	console.log(scol)	
+	var col_rel = scol.attr('colr');
+	var date;
+	if(col_rel==1){ date= $("#1").attr("date") }
+ 	else if( col_rel == 2){ date= $("#8").attr("date") }
+ 	else if( col_rel == 3){ date= $("#15").attr("date") }
+ 	else if( col_rel == 4){ date= $("#22").attr("date") }
+ 	else if( col_rel == 5){ date= $("#29").attr("date") }
+ 	else if( col_rel == 6){ date= $("#36").attr("date") }
+ 	var today = new Date();
+	var sdate = date.split("-");
+	var newdate= sdate[2]+"-"+sdate[1]+"-"+sdate[0];
+	var selectedDate = new Date(newdate);
+	if(selectedDate < today ){ $("#datevalidation").html("Please select a near future week")}
+	else{ $("#datevalidation").html("") ;return true; }
+}
+
+$('table').on('click', '.sel-row', function() { 
+    if($(this).hasClass('row_selected')){
+    	$(this).removeClass('row_selected');
+		$(this).find( ".fa-check" ).css( "font-size","14px" );
+		var col_rel =parseInt( $(this).attr("scol"));
+		for(i=col_rel; i<(col_rel+6); i++) { 
+			$("#"+i).removeClass('selected');
+			$("#"+i).removeClass('unselected');
+			var date =$("#"+i).attr('date');
+   			selected = $.grep(selected, function(value) { return value != date; });
+		}
+    }
+    else{
+         var scol =$(this)
+         var week_validate = week_validation(scol);
+        if(week_validate){
+        	$(this).addClass('row_selected');
+			var col_rel =parseInt( $(this).attr("scol"));
+			for(i=col_rel; i<(col_rel+6); i++) { 
+				$("#"+i).addClass('selected');
+				var date =$("#"+i).attr('date');
+				selected.push(date);
+			}
+        }
+    }
+    console.log(selected);	
+});
+
+function ckeck_selected(row){
+	if(row.find('.selected').length == 0){
+		$(".sel-row").removeClass('row_selected');
+		$(".sel-row").find( ".fa-check" ).css( "font-size","14px" );
+		row.find('.unselected').removeClass("unselected");
+	}
+}
+
+function remove_unselected(){
+ 	for(i=0;i<selected.length;i++){	 
+ 		$("[date="+selected[i]+"]").removeClass("unselected");
+ 		var col_rel = $("[date="+selected[i]+"]").attr("colr");
+ 		if(col_rel==1){
+ 			$("#r_1").removeClass("unselected");
+ 			$("#r_1").addClass("row_selected");
+ 		}
+ 		else if( col_rel == 2){
+ 			$("#r_8").removeClass("unselected");
+ 			$("#r_8").addClass("row_selected");
+ 		}
+ 		else if( col_rel == 3){
+ 			$("#r_15").removeClass("unselected");
+ 			$("#r_15").addClass("row_selected");
+ 		}
+ 		else if( col_rel == 4){
+ 			$("#r_22").removeClass("unselected");
+ 			$("#r_22").addClass("row_selected");
+ 		}
+ 		else if( col_rel == 5){
+ 			$("#r_29").removeClass("unselected");
+ 			$("#r_29").addClass("row_selected");
+ 		}
+ 		else if( col_rel == 6){
+ 			$("#r_36").removeClass("unselected");
+ 			$("#r_36").addClass("row_selected");
+ 		}
+ 	}
+ 	$(".l-col").removeClass("unselected");	
+ }
+
+function check_selected_ids(){
+     for(i=0;i<selected.length;i++){
+     	var col_rel = $("[date="+selected[i]+"]").attr("colr");
+     	$("[colr="+col_rel+"]").addClass("unselected");
+     	$("[date="+selected[i]+"]").addClass("selected");
+     }
+      remove_unselected();
+}
+
+$('table').on('click', '.selected', function() {
+   $(this).removeClass('selected');
+   $(this).addClass('unselected');
+   var row= $(this).parent();
+   ckeck_selected(row);
+   var date =$(this).attr('date');
+   selected = $.grep(selected, function(value) { return value != date; });
+   console.log(selected);
+});
+
+$('table').on('click', '.unselected', function() {
+   $(this).removeClass('unselected');
+   $(this).addClass('selected');
+   selected.push($(this).attr('date'));
+   console.log(selected);
+});
+
+});
+</script>
+</body>
+</html>
