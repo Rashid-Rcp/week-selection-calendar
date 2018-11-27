@@ -116,12 +116,10 @@ function generating_tables(rows){
     	row_rel++;
     }
 }
-
 function month_year(month, year){
 	var months=["January","February","March","April","May","June","July","August", "September","October","November","December"]
  	$("#month_year").html(months[month-1]+ " " + year);
 }
-
 function dateloop (ndays, sday, month, year){
 	var nd=ndays; var sd= sday; var m =month; var y=year;
 	for(i=1; i<=nd; i++){
@@ -160,7 +158,6 @@ function forward_overlapping(sday, ndays, columns, month, year){
 		next_days++;
 	}
 }
-
 $("#next").click(function(){
 	if(month+1==13){ month=1; year=year+1; }
 	else{ month=month+1; }
@@ -178,7 +175,6 @@ $("#next").click(function(){
 	forward_overlapping(sday, ndays, columns, month, year);
 	check_selected_ids()
 });
-
 $("#prev").click(function(){
 	if(month-1==0){ month=12; year=year-1; }
 	else{ month=month-1; }
@@ -196,8 +192,6 @@ $("#prev").click(function(){
 	forward_overlapping(sday, ndays, columns, month, year);
 	check_selected_ids()
 });
-
-
 function week_validation(scol){
 	console.log(scol)	
 	var col_rel = scol.attr('colr');
@@ -243,7 +237,6 @@ $('table').on('click', '.sel-row', function() {
     }
     console.log(selected);	
 });
-
 function ckeck_selected(row){
 	if(row.find('.selected').length == 0){
 		$(".sel-row").removeClass('row_selected');
@@ -251,7 +244,6 @@ function ckeck_selected(row){
 		row.find('.unselected').removeClass("unselected");
 	}
 }
-
 function remove_unselected(){
  	for(i=0;i<selected.length;i++){	 
  		$("[date="+selected[i]+"]").removeClass("unselected");
@@ -292,7 +284,6 @@ function check_selected_ids(){
      }
       remove_unselected();
 }
-
 $('table').on('click', '.selected', function() {
    $(this).removeClass('selected');
    $(this).addClass('unselected');
@@ -302,7 +293,6 @@ $('table').on('click', '.selected', function() {
    selected = $.grep(selected, function(value) { return value != date; });
    console.log(selected);
 });
-
 $('table').on('click', '.unselected', function() {
    $(this).removeClass('unselected');
    $(this).addClass('selected');
